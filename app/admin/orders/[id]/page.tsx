@@ -20,9 +20,7 @@ type OrderItem = {
   product_id: string
   quantity: number
   price_at_time: number
-  products: {
-    name: string
-  }
+  products: { name: string }[]
 }
 
 export default function OrderDetailsPage() {
@@ -50,11 +48,12 @@ export default function OrderDetailsPage() {
       }
       setOrder(orderData)
 
-      // Загружаем товары в заказе
+      // Загружаем товары в заказе (исправленный запрос)
       const { data: itemsData, error: itemsError } = await supabase
         .from('order_items')
         .select(`
           id,
+          product_id,
           quantity,
           price_at_time,
           products ( name )
@@ -105,7 +104,7 @@ export default function OrderDetailsPage() {
           <tbody className="divide-y divide-gray-200">
             {items.map((item) => (
               <tr key={item.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{item.products?.name || 'Товар удалён'}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{item.products?.[0]?.name || 'Товар удалён'}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{item.quantity}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{item.price_at_time.toLocaleString()} ₽</td>
                 <td className="px-6 py-4 whitespace-nowrap">{(item.price_at_time * item.quantity).toLocaleString()} ₽</td>
