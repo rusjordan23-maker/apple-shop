@@ -40,7 +40,7 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Защищённые маршруты для авторизованных пользователей
+  // Защищённые маршруты (авторизация обязательна)
   const authRequiredPaths = ['/checkout', '/profile']
   const isAuthRequired = authRequiredPaths.some(path => request.nextUrl.pathname.startsWith(path))
 
@@ -53,18 +53,23 @@ export async function proxy(request: NextRequest) {
   // Защита админки (только для admin)
   if (request.nextUrl.pathname.startsWith('/admin')) {
     if (!user) {
-      // Если не авторизован — на логин
       const redirectUrl = new URL('/auth/login', request.url)
       redirectUrl.searchParams.set('redirectedFrom', request.nextUrl.pathname)
       return NextResponse.redirect(redirectUrl)
     }
 
-    // Проверяем роль в метаданных
-    //const role = user.user_metadata?.role || 'user'
-    //if (role !== 'admin') {
-      // Если не админ — на главную
-     // return NextResponse.redirect(new URL('/', request.url))
-    //}
+    // Получаем роль из таблицы profiles
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    // Если профиля нет или роль не admin — редирект на главную
+    const role = profile?.role || 'user'
+    if (role !== 'admin') {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
   }
 
   return response
