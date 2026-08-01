@@ -12,6 +12,7 @@
     "@langchain/openai": "^1.5.5",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.111.0",
+    "axios": "^1.19.0",
     "clsx": "^2.1.1",
     "langchain": "^1.5.4",
     "lucide-react": "^1.28.0",
